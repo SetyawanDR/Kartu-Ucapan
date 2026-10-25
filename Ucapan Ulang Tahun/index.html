@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        /* === GLOBAL STYLES === */
+        :root {
+            --bg-color: #fdf6f5;
+            --text-main: #4a3b3b;
+            --text-muted: #8c7b7b;
+            --accent: #e8a5a5;
+            --white: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+            background-color: #000; /* Warna dasar hitam jika video telat memuat */
+        }
+
+        /* === CSS BACKGROUND VIDEO (PAS UNTUK 16:9 LANDSCAPE) === */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1; 
+            transform: translate(-50%, -50%); /* Menjaga video tetap tepat di tengah layar */
+            object-fit: cover; /* Agar proporsi 16:9 tidak gepeng */
+        }
+
+        /* === CONTAINER EFEK KACA (GLASSMORPHISM) === */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            min-height: 100vh;
+            position: relative;
+            
+            /* Background transparan & efek blur kaca */
+            background: rgba(253, 246, 245, 0.35); /* Tembus pandang 35% */
+            backdrop-filter: blur(12px); /* Efek buram kaca */
+            -webkit-backdrop-filter: blur(12px); /* Dukungan untuk Safari */
+            
+            /* Garis tepi tipis agar efek kaca lebih nyata */
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* === SCREEN 1: ENVELOPE === */
+        #envelope-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent; /* Diubah jadi transparent agar kaca terlihat */
+            z-index: 100;
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            width: 250px;
+            height: 180px;
+            background-color: #f3e5e5;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-left: 125px solid transparent;
+            border-right: 125px solid transparent;
+            border-top: 100px solid #e2d1d1;
+            z-index: 2;
+        }
+
+        .seal {
+            position: absolute;
+            top: 80px;
+            width: 50px;
+            height: 50px;
+            background-color: #d97777;
+            border-radius: 50%;
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .tap-text {
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* === SCREEN 2: MAIN CONTENT === */
+        #main-content {
+            display: none;
+            padding: 40px 20px;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-section span {
+            font-size: 12px;
+            color: var(--text-main);
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header-section h1 {
+            font-size: 32px;
+            margin: 10px 0;
+        }
+
+        .header-section p {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #d97777;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .intro-gif {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid var(--accent);
+        }
+
+        .intro-gif img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .intro-text {
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 30px 0;
+            font-weight: 500;
+        }
+
+        /* === MUSIC PLAYER === */
+        .music-player {
+            background-color: rgba(255, 255, 255, 0.85); /* Dibuat sedikit transparan */
+            padding: 15px 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 50px;
+            backdrop-filter: blur(5px);
+        }
+
+        .music-info h3 {
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            margin-bottom: 5px;
+        }
+        
+        .music-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .play-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* === ALBUM SECTION === */
+        .section-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-main);
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .carousel {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            margin-bottom: 50px;
+            backdrop-filter: blur(5px);
+        }
+
+        .carousel-img-container {
+            width: 100%;
+            height: 450px; 
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .carousel-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+
+        .carousel-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .carousel-caption {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 16px;
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
+        /* === WISHES SECTION === */
+        .wishes-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 50px;
+        }
+
+        .wish-card {
+            width: 30%;
+            height: 120px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+        }
+
+        .wish-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .wish-card img {
+            width: 40px;
+            margin-bottom: 10px;
+        }
+
+        .wish-text {
+            font-size: 10px;
+            display: none;
+        }
+
+        .wish-card.active .wish-icon { display: none; }
+        .wish-card.active .wish-text { display: block; }
+
+        /* === LETTER SECTION === */
+        .letter-btn-container {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(232, 165, 165, 0.4);
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #d99191;
+        }
+
+        #letter-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* === LETTER CONTENT EFEK KACA === */
+        .letter-content {
+            width: 85%;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            
+            /* Dibuat efek kaca juga agar estetik */
+            background: rgba(253, 246, 245, 0.65);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 20px;
+            background: none; border: none;
+            font-size: 20px; cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .letter-content p {
+            font-size: 14px;
+            line-height: 1.8;
+            text-align: left;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- VIDEO BACKGROUND -->
+    <video autoplay loop muted playsinline id="bg-video">
+        <source src="assets/video/background1.mp4" type="video/mp4">
+    </video>
+
+    <div class="container">
+        
+        <!-- AUDIO ELEMENT (Hidden) -->
+        <audio id="bg-music" loop>
+            <source src="assets/audio/lagu_romantis.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+
+        <!-- SCREEN 1: ENVELOPE -->
+        <div id="envelope-screen">
+            <p style="font-size: 12px; color: #4a3b3b; margin-bottom: 40px; letter-spacing: 2px; font-weight: 500;">❤ MADE WITH SO MUCH LOVE</p>
+            
+            <div class="envelope-wrapper" onclick="openEnvelope()">
+                <div class="envelope-flap"></div>
+                <div class="seal">♡</div>
+            </div>
+            
+            <p class="tap-text">Tap the seal to open</p>
+        </div>
+
+        <!-- SCREEN 2: MAIN CONTENT -->
+        <div id="main-content">
+            
+            <!-- Intro & Greeting -->
+            <div class="header-section">
+                <span>❤ Heheeee</span>
+                <h1>Happy Birthday</h1>
+                <p>My Beautiful Girll MBG ♡</p>
+            </div>
+
+            <div class="intro-gif">
+                <img src="assets/gambar/kucing_lucu.gif" alt="Cute Cat GIF">
+            </div>
+
+            <p class="intro-text">
+                Hari ini hari ayaaangggg. seluruh kebun berharap, untuk tiap tawa yang kita bagi, tiap momen memalukan kita, dan setiap alasan mengapa ayang membuat dunia bersinarrr. HAPPYYYYY BIRTHDAYYYYY AYAAAAANGG
+            </p>
+
+            <!-- Music Player -->
+            <div class="music-player">
+                <div class="music-info">
+                    <h3>Lagu spesial untuk ayangggg</h3>
+                    <p>I picked this one, because it always reminds me of you.</p>
+                </div>
+                <button class="play-btn" onclick="toggleMusic()" id="playBtn">▶</button>
+            </div>
+
+            <!-- Carousel Album -->
+            <h2 class="section-title">Our Album</h2>
+            <p class="section-subtitle">A few of my favourite moments with you ♡</p>
+            
+            <div class="carousel">
+                <div class="carousel-img-container">
+                    <img id="carousel-img" src="assets/gambar/foto1.png" alt="Memory">
+                </div>
+                <div class="carousel-nav">
+                    <button class="nav-btn" onclick="changePhoto(-1)">←</button>
+                    <p class="carousel-caption" id="carousel-caption">Happy happy happy BIRTHDAY!!!</p>
+                    <button class="nav-btn" onclick="changePhoto(1)">→</button>
+                </div>
+                <p style="font-size: 10px; color: #8c7b7b; margin-top: 15px;" id="photo-counter">MEMORY 1 / 3</p>
+            </div>
+
+            <!-- Wishes -->
+            <h2 class="section-title">Bubu Dudu Miniii</h2>
+            <p class="section-subtitle">Pilih apa yang mau aku lakuin ke ayanggg ♡</p>
+
+            <div class="wishes-container">
+                <div class="wish-card" onclick="toggleWish(this)">
+                    <img src="assets/gambar/ucapan1.gif" alt="Flower" class="wish-icon">
+                    <p class="wish-text">May your smile always be as bright as it is today.</p>
+                </div>
+                <div class="wish-card" onclick="toggleWish(this)">
+                    <img src="assets/gambar/ucapan2.gif" alt="Flower" class="wish-icon">
+                    <p class="wish-text">Wishing you a year full of good food and endless naps!</p>
+                </div>
+                <div class="wish-card" onclick="toggleWish(this)">
+                    <img src="assets/gambar/ucapan3.gif" alt="Flower" class="wish-icon">
+                    <p class="wish-text">Thank you for being you. I love you!</p>
+                </div>
+            </div>
+
+            <!-- Letter Button -->
+            <div class="letter-btn-container">
+                <button class="btn-primary" onclick="openLetter()">READ MY LETTER →</button>
+            </div>
+
+        </div> <!-- End Main Content -->
+
+        <!-- LETTER MODAL -->
+        <div id="letter-modal">
+            <div class="letter-content">
+                <button class="close-btn" onclick="closeLetter()">×</button>
+                <img src="assets/gambar/avatar_lucu.gif" alt="Avatar" style="width: 60px; margin-bottom: 10px;">
+                <h2 style="font-size: 20px;">My Beautiful Girl</h2>
+                
+                <p>
+                    Ndak ada kartu ucapan yang cukup besar untuk menampung semua yang ingin kusampaikan, jadi kubuatin ruang digital kecil ini untuk ayanggg.. 
+                    <br><br>
+                    Terima kasih untuk hal-hal kecil yang tak terlihat, cara ayangg menanyakan kabarku, lelucon yang hanya kita mengerti, serta kesabaran ayang yang tenang saat aku bersikap berlebihan dan ngambekan. Makasih ya ayanggg. 
+                    <br><br>
+                    Selamat ulang tahun. Semoga hari ini terasa selembut dan seistimewa hari-hari yang selalu ayang buat terasa indah bagiku..
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 1. Logic Envelope
+        function openEnvelope() {
+            const envelope = document.getElementById('envelope-screen');
+            const mainContent = document.getElementById('main-content');
+            
+            // Efek amplop menghilang ke atas
+            envelope.style.transform = 'translateY(-100vh)';
+            envelope.style.opacity = '0';
+            
+            setTimeout(() => {
+                envelope.style.display = 'none';
+                mainContent.style.display = 'block';
+                // Trigger reflow untuk animasi fade-in
+                void mainContent.offsetWidth; 
+                mainContent.style.opacity = '1';
+                
+            }, 800); // Menunggu animasi selesai
+        }
+
+        // 2. Logic Music Player
+        const audio = document.getElementById('bg-music');
+        const playBtn = document.getElementById('playBtn');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                playBtn.innerHTML = '▶';
+            } else {
+                audio.play();
+                playBtn.innerHTML = '||';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // 3. Logic Carousel Album
+        const albumData = [
+            { src: 'assets/gambar/foto1.png', caption: 'Happy happy happy BIRTHDAY!!!' },
+            { src: 'assets/gambar/foto2.png', caption: 'Ordinary days with you have always been my favorite ones.' },
+            { src: 'assets/gambar/foto3.png', caption: 'Thank you for showing up - for everything, every time.' }
+        ];
+        
+        let currentIndex = 0;
+        const imgElement = document.getElementById('carousel-img');
+        const captionElement = document.getElementById('carousel-caption');
+        const counterElement = document.getElementById('photo-counter');
+
+        function changePhoto(direction) {
+            currentIndex += direction;
+            
+            // Looping jika sudah di ujung
+            if (currentIndex < 0) currentIndex = albumData.length - 1;
+            if (currentIndex >= albumData.length) currentIndex = 0;
+
+            // Update UI
+            imgElement.src = albumData[currentIndex].src;
+            captionElement.innerText = albumData[currentIndex].caption;
+            counterElement.innerText = `MEMORY ${currentIndex + 1} / ${albumData.length}`;
+        }
+
+        // 4. Logic Wish Cards
+        function toggleWish(cardElement) {
+            cardElement.classList.toggle('active');
+        }
+
+        // 5. Logic Letter Modal
+        const modal = document.getElementById('letter-modal');
+        function openLetter() {
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = '1'; }, 10);
+        }
+
+        function closeLetter() {
+            modal.style.opacity = '0';
+            setTimeout(() => { modal.style.display = 'none'; }, 500);
+        }
+    </script>
+</body>
+</html>
